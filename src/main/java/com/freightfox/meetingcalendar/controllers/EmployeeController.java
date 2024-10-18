@@ -1,16 +1,18 @@
 package com.freightfox.meetingcalendar.controllers;
 
 
+import com.freightfox.meetingcalendar.dtos.MeetingDto;
 // import com.freightfox.meetingcalendar.dtos.MeetingDto;
 import com.freightfox.meetingcalendar.entities.Employee;
+import com.freightfox.meetingcalendar.entities.Meeting;
 // import com.freightfox.meetingcalendar.entities.Meeting;
 import com.freightfox.meetingcalendar.services.EmployeeService;
+import com.freightfox.meetingcalendar.services.MeetingService;
+
 // import com.freightfox.meetingcalendar.services.MeetingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-
 
 import java.util.List;
 
@@ -20,6 +22,8 @@ public class EmployeeController {
 
     @Autowired
     private EmployeeService employeeService;
+    @Autowired
+    private MeetingService meetingService;
 
     // Create a new employee
     @PostMapping
@@ -42,12 +46,16 @@ public class EmployeeController {
         return ResponseEntity.ok(employee);
     }
 
-    // @PostMapping("/{employeeId}/meetings")
-    // public ResponseEntity<Meeting> bookMeeting(@PathVariable Long employeeId, @RequestBody MeetingDto meetingDTO) {
-    //     Meeting bookedMeeting = meetingService.bookMeeting(employeeId, meetingDTO);
-    //     return ResponseEntity.ok(bookedMeeting);
-    // }
+    @PostMapping("/{employeeId}/meetings")
+    public ResponseEntity<Meeting> bookMeeting(@PathVariable Long employeeId, @RequestBody MeetingDto meetingDTO) {
+        Meeting bookedMeeting = meetingService.bookMeeting(employeeId, meetingDTO);
+        return ResponseEntity.ok(bookedMeeting);
+    }
 
+    /**
+     * Simple test to check if the API is running
+     * @return a "Working" string
+     */
     @GetMapping("/test")
     public String test(){
         return "Working";

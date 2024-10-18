@@ -28,23 +28,33 @@ public class MeetingService {
     private MeetingRepository meetingRepository;
 
     // Book a meeting for a given employee
+       
     public Meeting bookMeeting(Long employeeId, MeetingDto meetingDTO) {
-        Employee employee = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
+        Employee owner = employeeRepository.findById(employeeId)
+            .orElseThrow(() -> new RuntimeException("Employee not found"));
 
+        // Fetch participants and add owner to the participants list
         List<Employee> participants = employeeRepository.findAllById(meetingDTO.getParticipantIds());
-
-        // Check if any participant has a conflict
-        for (Employee participant : participants) {
-            if (hasMeetingConflict(participant, meetingDTO.getStartTime(), meetingDTO.getEndTime())) {
-                throw new RuntimeException("Conflict for participant: " + participant.getName());
-            }
+        if (!participants.contains(owner)) {
+            participants.add(owner);
         }
 
-        // Create the new meeting
-        Meeting meeting = new Meeting(meetingDTO.getStartTime(), meetingDTO.getEndTime(), employee, participants);
-        return meetingRepository.save(meeting);
-    }
+        // Create the meeting and associate it with participants
+        Meeting meeting = new Meeting(meetingDTO.getStartTime(), meetingDTO.getEndTime(), participants);
+
+        // Associate the meeting with the employees' meetings
+        for (Employee participant : participants) {
+            participant.getMeetings().add(meeting);
+        }
+
+        // Save the meeting
+        meetingRepository.save(meeting);
+
+        // Save the updated employees (with the new meeting)
+        employeeRepository.saveAll(participants);
+
+        return meeting;
+    }    
 
     // Find free slots between two employees for a given duration
     public List<FreeSlot> findFreeSlots(Long employee1Id, Long employee2Id, Duration duration) {
